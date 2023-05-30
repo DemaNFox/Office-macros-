@@ -1,0 +1,8 @@
+Function FormatPhoneNumber(ByVal inputString As String) As String
+    Dim result As String
+    result = Replace(inputString, "+7 (", "7")
+    result = Replace(result, ")", "")
+    result = Replace(result, " ", "")
+    result = Replace(result, "-", "")
+    FormatPhoneNumber = result
+End Function
