@@ -1,0 +1,31 @@
+Sub SaveEachSheetAsNewFile()
+    Dim ws As Worksheet
+    Dim i As Integer
+    Dim fileName As String
+    Dim filePath As String
+    
+    ' Запрашиваем у пользователя название файла
+    fileName = InputBox("Введите название файла:", "Сохранить как")
+    
+    ' Проверяем, чтобы пользователь ввел название файла
+    If fileName = "" Then
+        MsgBox "Вы не ввели название файла. Операция отменена."
+        Exit Sub
+    End If
+    
+    ' Получаем путь к рабочему столу
+    filePath = CreateObject("WScript.Shell").SpecialFolders("Desktop") & "\"
+    
+    i = 1 ' Инициализируем счетчик
+    
+    ' Перебираем все листы в книге
+    For Each ws In ThisWorkbook.Sheets
+        ' Сохраняем текущий лист в новый файл на рабочем столе
+        ws.Copy
+        ActiveWorkbook.SaveAs fileName:=filePath & fileName & "_" & i & ".xlsx"
+        ActiveWorkbook.Close False
+        i = i + 1 ' Увеличиваем счетчик для следующего файла
+    Next ws
+    
+    MsgBox "Файлы успешно сохранены на рабочем столе."
+End Sub
