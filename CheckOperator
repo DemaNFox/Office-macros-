@@ -1,0 +1,14 @@
+Function CheckOperator(phoneNumber As String) As String
+    Dim prefix As String
+    prefix = Left(phoneNumber, 4)
+    
+    Select Case prefix
+        Case "7999", "7950", "7951", "7958", "7932", "7953", "7977", "7978", "7979", _
+             "7902", "7903", "7904", "7905", "7906", "7908", "7909", "7960", "7961", _
+             "7962", "7963", "7964", "7965", "7966", "7967", "7968", "7969", "7971", _
+             "7980", "7983", "7986", "7992", "7993", "7996"
+            CheckOperator = "Да"
+        Case Else
+            CheckOperator = "Нет"
+    End Select
+End Function
