@@ -1,0 +1,79 @@
+Sub Handler()
+'
+' Handler Macro
+'
+
+' Выбор папки с файлами
+Dim sFolder As String, sFiles As String
+With Application.FileDialog(msoFileDialogFolderPicker)
+    If .Show = False Then Exit Sub
+    sFolder = .SelectedItems(1)
+End With
+sFolder = sFolder & IIf(Right(sFolder, 1) = Application.PathSeparator, "", Application.PathSeparator)
+sFiles = Dir(sFolder & "*.xls*")
+Application.ScreenUpdating = False
+
+' Открытие и обработка каждого файла в выбранной папке
+Do While sFiles <> ""
+    Workbooks.Open sFolder & sFiles
+    
+    ' Удаление первых трех строк
+    Rows("1:3").Select
+    Selection.Delete Shift:=xlUp
+    
+    ' Удаление последней строки
+    Rows(Cells(Rows.Count, "A").End(xlUp).Row).Select
+    Selection.Delete Shift:=xlUp
+    
+    ' Сохранение и закрытие файла
+    ActiveWorkbook.Save
+    ActiveWorkbook.Close True
+    sFiles = Dir
+Loop
+
+' Выбор файлов для объединения
+Dim FilesToOpen
+Dim x As Integer
+
+FilesToOpen = Application.GetOpenFilename( _
+    FileFilter:="All files (*.*), *.*", _
+    MultiSelect:=True, Title:="Files to Merge")
+
+If TypeName(FilesToOpen) = "Boolean" Then
+    MsgBox "No files selected!"
+    Exit Sub
+End If
+
+' Объединение выбранных файлов
+x = 1
+While x <= UBound(FilesToOpen)
+    Set importWB = Workbooks.Open(Filename:=FilesToOpen(x))
+    Sheets().Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+    importWB.Close savechanges:=False
+    x = x + 1
+Wend
+
+' Удаление первого листа (если нужно)
+Application.DisplayAlerts = False
+Sheets("Sheet1").Delete
+Application.DisplayAlerts = True
+
+' Создание нового отчета
+Dim ws As Worksheet
+Set wbCurrent = ActiveWorkbook
+Workbooks.Add
+Set wbReport = ActiveWorkbook
+
+' Копирование заголовков
+wbCurrent.Worksheets(1).Range("A1:E1").Copy Destination:=wbReport.Worksheets(1).Range("A1")
+
+' Копирование данных с каждого листа
+For Each ws In wbCurrent.Worksheets
+    n = wbReport.Worksheets(1).Range("A1").CurrentRegion.Rows.Count
+    Set rngData = ws.Range("A2", ws.Range("A2").SpecialCells(xlCellTypeLastCell))
+    rngData.Copy Destination:=wbReport.Worksheets(1).Cells(n + 1, 1)
+Next ws
+
+Application.ScreenUpdating = True
+
+End Sub
