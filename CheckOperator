@@ -1,38 +1,69 @@
-Function IsOperatorNumber(phoneNumber As String) As Boolean
-    Dim codes As Variant
-    Dim i As Integer
-    Dim phoneCode As String
-    
-    ' Удаляем префикс 7 или +7 если есть
-    If Left(phoneNumber, 1) = "+" Then
-        phoneNumber = Mid(phoneNumber, 2)
-    End If
-    If Left(phoneNumber, 1) = "7" Then
-        phoneNumber = Mid(phoneNumber, 2)
-    End If
-    
-    ' Коды операторов
-    codes = Array("900335", "900336", "337", "338", "339", "340", "341", "342", "343", "344", _
-                  "90205", "90206", "90207", "90252", "902553", "902554", "902555", "902556", _
-                  "902557", "902559", "902710", "902717", "903", "90462", "904700", "904701", _
-                  "904702", "904703", "904704", "904705", "904706", "904707", "904726", "904727", _
-                  "905", "906", "908364", "908375", "908376", "908377", "908378", "908379", _
-                  "908435", "908436", "908437", "908438", "908439", "90844", "90845", "908460", _
-                  "908461", "908462", "908463", "908464", "90896", "90897", "90898", "90899", _
-                  "909", "930095", "933001", "933002", "933003", "933004", "933005", "933006", _
-                  "933007", "933008", "933009", "933010", "933011", "933012", "933013", _
-                  "933034", "933035", "933036", "950668", "950880", "95100", "95101", "95102", _
-                  "95320", "95321", "95322", "960", "961", "962", "963", "964", "965", "966", _
-                  "967", "968", "969", "983888", "983999", "986667", "986668", "986669", _
-                  "986670", "986671", "986672", "986673", "986666", "996", "999")
+Sub RemoveDuplicatePhones()
+    Dim ws As Worksheet
+    Dim lastRow As Long
+    Dim phoneColumn As String
+    Dim i As Long
+    Dim dict As Object
+    Dim removedCount As Long
+    Dim data As Variant
+    Dim result As Variant
+    Dim resultIndex As Long
 
-    ' Проверка соответствия коду оператора
-    IsOperatorNumber = False
-    For i = LBound(codes) To UBound(codes)
-        phoneCode = Left(phoneNumber, Len(codes(i)))
-        If phoneCode = codes(i) Then
-            IsOperatorNumber = True
-            Exit Function
+    ' Отключите обновление экрана и автоматический пересчет
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+
+    ' Установите ваш рабочий лист
+    Set ws = ThisWorkbook.Sheets("Sheet1") ' Измените "Sheet1" на имя вашего листа
+
+    ' Определите столбец с номерами телефонов
+    phoneColumn = "B" ' Измените "B" на соответствующий столбец в вашем файле
+
+    ' Найдите последнюю заполненную строку в столбце с номерами телефонов
+    lastRow = ws.Cells(ws.Rows.Count, phoneColumn).End(xlUp).Row
+
+    ' Создайте словарь для хранения уникальных номеров телефонов
+    Set dict = CreateObject("Scripting.Dictionary")
+
+    ' Переменная для подсчета удаленных строк
+    removedCount = 0
+
+    ' Считать данные в массив
+    data = ws.Range("A1:H" & lastRow).Value
+    ReDim result(1 To UBound(data, 1), 1 To UBound(data, 2))
+    resultIndex = 1
+
+    ' Переберите строки и удалите дублирующиеся номера телефонов
+    For i = 1 To UBound(data, 1)
+        Dim phoneNumber As String
+        phoneNumber = data(i, 2)
+
+        If dict.exists(phoneNumber) Then
+            removedCount = removedCount + 1
+        Else
+            dict.Add phoneNumber, Nothing
+            result(resultIndex, 1) = data(i, 1)
+            result(resultIndex, 2) = data(i, 2)
+            result(resultIndex, 3) = data(i, 3)
+            result(resultIndex, 4) = data(i, 4)
+            result(resultIndex, 5) = data(i, 5)
+            result(resultIndex, 6) = data(i, 6)
+            result(resultIndex, 7) = data(i, 7)
+            result(resultIndex, 8) = data(i, 8)
+            resultIndex = resultIndex + 1
         End If
     Next i
-End Function
+
+    ' Записать результат обратно в лист
+    ws.Range("A1:H" & lastRow).ClearContents
+    ws.Range("A1").Resize(resultIndex - 1, UBound(result, 2)).Value = result
+
+    ' Очистите память
+    Set dict = Nothing
+
+    ' Включите обновление экрана и автоматический пересчет
+    Application.Calculation = xlCalculationAutomatic
+    Application.ScreenUpdating = True
+
+    MsgBox "Удаление дублирующихся номеров телефонов завершено! Удалено " & removedCount & " номеров."
+End Sub
