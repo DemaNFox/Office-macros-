@@ -1,7 +1,7 @@
 Sub RemoveDuplicatePhones()
     Dim ws As Worksheet
     Dim lastRow As Long
-    Dim phoneColumn As String
+    Dim phoneColumn As Range
     Dim i As Long
     Dim dict As Object
     Dim removedCount As Long
@@ -13,14 +13,21 @@ Sub RemoveDuplicatePhones()
     Application.ScreenUpdating = False
     Application.Calculation = xlCalculationManual
 
-    ' Установите ваш рабочий лист
-    Set ws = ThisWorkbook.Sheets("Sheet1") ' Измените "Sheet1" на имя вашего листа
+    ' Установите текущий рабочий лист
+    Set ws = ActiveSheet
 
-    ' Определите столбец с номерами телефонов
-    phoneColumn = "B" ' Измените "B" на соответствующий столбец в вашем файле
+    ' Запросите у пользователя выбор столбца для номеров телефонов
+    On Error Resume Next
+    Set phoneColumn = Application.InputBox("Выберите столбец с номерами телефонов:", "Выбор столбца", Type:=8)
+    On Error GoTo 0
 
-    ' Найдите последнюю заполненную строку в столбце с номерами телефонов
-    lastRow = ws.Cells(ws.Rows.Count, phoneColumn).End(xlUp).Row
+    If phoneColumn Is Nothing Then
+        MsgBox "Операция отменена пользователем.", vbExclamation
+        Exit Sub
+    End If
+
+    ' Найдите последнюю заполненную строку в выбранном столбце
+    lastRow = ws.Cells(ws.Rows.Count, phoneColumn.Column).End(xlUp).Row
 
     ' Создайте словарь для хранения уникальных номеров телефонов
     Set dict = CreateObject("Scripting.Dictionary")
@@ -36,7 +43,7 @@ Sub RemoveDuplicatePhones()
     ' Переберите строки и удалите дублирующиеся номера телефонов
     For i = 1 To UBound(data, 1)
         Dim phoneNumber As String
-        phoneNumber = data(i, 2)
+        phoneNumber = data(i, phoneColumn.Column)
 
         If dict.exists(phoneNumber) Then
             removedCount = removedCount + 1
