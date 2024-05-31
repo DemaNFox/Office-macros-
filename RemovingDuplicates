@@ -9,6 +9,10 @@ Sub RemoveDuplicatePhones()
     Dim result As Variant
     Dim resultIndex As Long
 
+    ' Отключите обновление экрана и автоматический пересчет
+    Application.ScreenUpdating = False
+    Application.Calculation = xlCalculationManual
+
     ' Установите ваш рабочий лист
     Set ws = ThisWorkbook.Sheets("Sheet1") ' Измените "Sheet1" на имя вашего листа
 
@@ -56,6 +60,10 @@ Sub RemoveDuplicatePhones()
 
     ' Очистите память
     Set dict = Nothing
+
+    ' Включите обновление экрана и автоматический пересчет
+    Application.Calculation = xlCalculationAutomatic
+    Application.ScreenUpdating = True
 
     MsgBox "Удаление дублирующихся номеров телефонов завершено! Удалено " & removedCount & " номеров."
 End Sub
