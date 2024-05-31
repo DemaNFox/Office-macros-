@@ -6,12 +6,30 @@ Sub CheckOperator()
     Dim i As Long
     Dim beelineCodes As Variant
     Dim codeDict As Object
+    Dim phoneColumn As Range
+    Dim colIndex As Long
+    Dim colLetter As String
     
-    ' Установите ссылку на рабочий лист
-    Set ws = ThisWorkbook.Sheets("Sheet1")
+    ' Установите ссылку на активный рабочий лист
+    Set ws = ActiveSheet
     
-    ' Определите последнюю строку в таблице
-    lastRow = ws.Cells(ws.Rows.Count, "B").End(xlUp).Row
+    ' Запрос у пользователя выбора столбца с номерами телефонов
+    On Error Resume Next
+    Set phoneColumn = Application.InputBox("Выберите столбец с номерами телефонов", Type:=8)
+    On Error GoTo 0
+    
+    ' Проверка, был ли выбран столбец
+    If phoneColumn Is Nothing Then
+        MsgBox "Столбец не выбран. Прерывание выполнения макроса."
+        Exit Sub
+    End If
+    
+    ' Определение индекса и буквы выбранного столбца
+    colIndex = phoneColumn.Cells(1, 1).Column
+    colLetter = Split(phoneColumn.Address, "$")(2)
+    
+    ' Определите последнюю строку в выбранном столбце
+    lastRow = ws.Cells(ws.Rows.Count, colIndex).End(xlUp).Row
 
     ' Список кодов Билайн
     beelineCodes = Array("900335", "900336", "337", "338", "339", "340", "341", "342", "343", "344", _
@@ -35,12 +53,12 @@ Sub CheckOperator()
     Next code
     
     ' Вставка нового столбца для оператора
-    ws.Columns("B").Insert Shift:=xlToRight
-    ws.Cells(1, 2).Value = "Оператор"
-
+    ws.Columns(colLetter & ":" & colLetter).Insert Shift:=xlToRight
+    ws.Cells(1, colIndex).Value = "Оператор"
+    
     ' Проверка номеров телефонов
     For i = 2 To lastRow
-        phoneNumber = CStr(ws.Cells(i, 3).Value)
+        phoneNumber = CStr(ws.Cells(i, colIndex + 1).Value)
         operatorName = ""
         
         ' Удаление кода страны, если присутствует
@@ -58,7 +76,7 @@ Sub CheckOperator()
             End If
         Next code
         
-        ws.Cells(i, 2).Value = operatorName
+        ws.Cells(i, colIndex).Value = operatorName
     Next i
     
     ' Освобождение ресурсов
