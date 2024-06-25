@@ -46,11 +46,12 @@ Sub CheckOperator()
                          "967", "968", "969", "983888", "983999", "986667", "986668", "986669", _
                          "986670", "986671", "986672", "986673", "986666", "996", "999")
     
-    ' Создание словаря для быстрого поиска кодов
-    Set codeDict = CreateObject("Scripting.Dictionary")
-    For Each code In beelineCodes
-        codeDict(code) = True
-    Next code
+				' Создание словаря для быстрого поиска кодов
+				Set codeDict = CreateObject("Scripting.Dictionary")
+				For Each code In beelineCodes
+						codeDict(code) = True
+				Next code
+
     
     ' Вставка нового столбца для оператора
     ws.Columns(colLetter & ":" & colLetter).Insert Shift:=xlToRight
