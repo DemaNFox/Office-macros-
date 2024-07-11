@@ -1,79 +1,51 @@
 Sub Handler()
-'
-' Handler Macro
-'
+    ' Выбор папки с файлами
+    Dim sFolder As String, sFiles As String
+    With Application.FileDialog(msoFileDialogFolderPicker)
+        If .Show = False Then Exit Sub
+        sFolder = .SelectedItems(1)
+    End With
+    sFolder = sFolder & IIf(Right(sFolder, 1) = Application.PathSeparator, "", Application.PathSeparator)
+    sFiles = Dir(sFolder & "*.xls*")
+    Application.ScreenUpdating = False
 
-' Выбор папки с файлами
-Dim sFolder As String, sFiles As String
-With Application.FileDialog(msoFileDialogFolderPicker)
-    If .Show = False Then Exit Sub
-    sFolder = .SelectedItems(1)
-End With
-sFolder = sFolder & IIf(Right(sFolder, 1) = Application.PathSeparator, "", Application.PathSeparator)
-sFiles = Dir(sFolder & "*.xls*")
-Application.ScreenUpdating = False
+    ' Создание нового отчета
+    Dim wbReport As Workbook, wsReport As Worksheet
+    Set wbReport = Workbooks.Add
+    Set wsReport = wbReport.Sheets(1)
+    Dim n As Long
+    n = 1 ' Начальная строка для копирования данных
 
-' Открытие и обработка каждого файла в выбранной папке
-Do While sFiles <> ""
-    Workbooks.Open sFolder & sFiles
-    
-    ' Удаление первых трех строк
-    Rows("1:3").Select
-    Selection.Delete Shift:=xlUp
-    
-    ' Удаление последней строки
-    Rows(Cells(Rows.Count, "A").End(xlUp).Row).Select
-    Selection.Delete Shift:=xlUp
-    
-    ' Сохранение и закрытие файла
-    ActiveWorkbook.Save
-    ActiveWorkbook.Close True
-    sFiles = Dir
-Loop
+    ' Открытие и обработка каждого файла в выбранной папке
+    Do While sFiles <> ""
+        Dim wbCurrent As Workbook, wsCurrent As Worksheet
+        Set wbCurrent = Workbooks.Open(sFolder & sFiles)
+        
+        ' Копирование данных с каждого листа
+        For Each wsCurrent In wbCurrent.Worksheets
+            ' Копирование всех данных кроме первой строки
+            Dim lastRow As Long, lastCol As Long
+            lastRow = wsCurrent.Cells(wsCurrent.Rows.Count, "A").End(xlUp).Row
+            lastCol = wsCurrent.Cells(1, wsCurrent.Columns.Count).End(xlToLeft).Column
+            
+            If lastRow > 1 Then
+                wsCurrent.Range(wsCurrent.Cells(2, 1), wsCurrent.Cells(lastRow, lastCol)).Copy _
+                    Destination:=wsReport.Cells(n, 1)
+                n = n + lastRow - 1
+            End If
+        Next wsCurrent
+        
+        wbCurrent.Close savechanges:=False
+        sFiles = Dir
+    Loop
 
-' Выбор файлов для объединения
-Dim FilesToOpen
-Dim x As Integer
+    ' Удаление первого листа (если нужно)
+    Application.DisplayAlerts = False
+    If wbReport.Sheets.Count > 1 Then
+        wbReport.Sheets(1).Delete
+    End If
+    Application.DisplayAlerts = True
 
-FilesToOpen = Application.GetOpenFilename( _
-    FileFilter:="All files (*.*), *.*", _
-    MultiSelect:=True, Title:="Files to Merge")
-
-If TypeName(FilesToOpen) = "Boolean" Then
-    MsgBox "No files selected!"
-    Exit Sub
-End If
-
-' Объединение выбранных файлов
-x = 1
-While x <= UBound(FilesToOpen)
-    Set importWB = Workbooks.Open(Filename:=FilesToOpen(x))
-    Sheets().Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
-    importWB.Close savechanges:=False
-    x = x + 1
-Wend
-
-' Удаление первого листа (если нужно)
-Application.DisplayAlerts = False
-Sheets("Sheet1").Delete
-Application.DisplayAlerts = True
-
-' Создание нового отчета
-Dim ws As Worksheet
-Set wbCurrent = ActiveWorkbook
-Workbooks.Add
-Set wbReport = ActiveWorkbook
-
-' Копирование заголовков
-wbCurrent.Worksheets(1).Range("A1:E1").Copy Destination:=wbReport.Worksheets(1).Range("A1")
-
-' Копирование данных с каждого листа
-For Each ws In wbCurrent.Worksheets
-    n = wbReport.Worksheets(1).Range("A1").CurrentRegion.Rows.Count
-    Set rngData = ws.Range("A2", ws.Range("A2").SpecialCells(xlCellTypeLastCell))
-    rngData.Copy Destination:=wbReport.Worksheets(1).Cells(n + 1, 1)
-Next ws
-
-Application.ScreenUpdating = True
-
+    Application.ScreenUpdating = True
+    MsgBox "Merge complete!"
 End Sub
