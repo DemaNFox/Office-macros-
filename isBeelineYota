@@ -1,4 +1,4 @@
-Sub CheckOperator()
+Sub isBeelineYota ()
     Dim ws As Worksheet
     Dim lastRow As Long
     Dim phoneNumber As String
