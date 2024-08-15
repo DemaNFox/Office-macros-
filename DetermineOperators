@@ -1,3 +1,5 @@
+' Определяет операторов по столбцу с номерами телефонов. Низкая точность по сравнению с python программой.
+
 Sub DetermineOperators()
     Dim ws As Worksheet
     Dim lastRow As Long
