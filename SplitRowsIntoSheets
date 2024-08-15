@@ -1,3 +1,5 @@
+' Рзалеление строк на новые сраницы в указанном количестве для каждой. Остаток пойдет на последнюю страницу.
+
 Sub SplitRowsIntoSheets()
     Dim wsSource As Worksheet
     Dim wsNew As Worksheet
