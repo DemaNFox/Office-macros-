@@ -1,3 +1,5 @@
+' Перемешивание строк в рандомном порядке.
+
 Public Sub ShuffleRowsOptimized()
     Dim ws As Worksheet
     Set ws = ActiveSheet
