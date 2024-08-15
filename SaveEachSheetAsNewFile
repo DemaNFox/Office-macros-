@@ -1,3 +1,5 @@
+' Сохранения всех листов excel в одтельные файлы с указаниеи общего имени и приставкой номера файла.
+
 Sub SaveEachSheetAsNewFile()
     Dim ws As Worksheet
     Dim i As Integer
