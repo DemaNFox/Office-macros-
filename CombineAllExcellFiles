@@ -1,3 +1,5 @@
+'Кобмбинирует все файлы ексель в указанной папке на одном листе
+
 Sub Handler()
     ' Выбор папки с файлами
     Dim sFolder As String, sFiles As String
