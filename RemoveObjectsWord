@@ -1,3 +1,5 @@
+' Удаляет объекты из документа word, полезно при чистке файла.
+
 Sub RemoveObjects()
     Dim obj As Object
     
