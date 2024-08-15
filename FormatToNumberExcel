@@ -1,3 +1,5 @@
+' Форматирует номер телефона к чистому, убирая все возможные знаки между цифрами.
+
 Function FormatPhoneNumber(ByVal inputString As String) As String
     Dim result As String
     result = Replace(inputString, "+7 (", "7")
