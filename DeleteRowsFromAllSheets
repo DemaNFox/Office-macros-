@@ -1,3 +1,5 @@
+' Удаляет указанное количество первых строк на всех листах
+
 Sub DeleteRowsFromAllSheets()
     Dim ws As Worksheet
     Dim rowCount As Long
