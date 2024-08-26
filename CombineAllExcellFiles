@@ -1,6 +1,6 @@
 'Кобмбинирует все файлы ексель в указанной папке на одном листе
 
-Sub Handler()
+Sub CombineAllExcellFiles()
     ' Выбор папки с файлами
     Dim sFolder As String, sFiles As String
     With Application.FileDialog(msoFileDialogFolderPicker)
@@ -25,11 +25,27 @@ Sub Handler()
         
         ' Копирование данных с каждого листа
         For Each wsCurrent In wbCurrent.Worksheets
-            ' Копирование всех данных кроме первой строки
+            ' Определение последней строки и последнего столбца
             Dim lastRow As Long, lastCol As Long
-            lastRow = wsCurrent.Cells(wsCurrent.Rows.Count, "A").End(xlUp).Row
-            lastCol = wsCurrent.Cells(1, wsCurrent.Columns.Count).End(xlToLeft).Column
+            Dim lastCell As Range
             
+            ' Поиск последней заполненной ячейки по строкам
+            Set lastCell = wsCurrent.Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious)
+            If Not lastCell Is Nothing Then
+                lastRow = lastCell.Row
+            Else
+                lastRow = 0 ' Если данных нет, устанавливаем lastRow в 0
+            End If
+
+            ' Поиск последней заполненной ячейки по столбцам
+            Set lastCell = wsCurrent.Cells.Find("*", SearchOrder:=xlByColumns, SearchDirection:=xlPrevious)
+            If Not lastCell Is Nothing Then
+                lastCol = lastCell.Column
+            Else
+                lastCol = 0 ' Если данных нет, устанавливаем lastCol в 0
+            End If
+            
+            ' Копирование данных, начиная со второй строки
             If lastRow > 1 Then
                 wsCurrent.Range(wsCurrent.Cells(2, 1), wsCurrent.Cells(lastRow, lastCol)).Copy _
                     Destination:=wsReport.Cells(n, 1)
