@@ -8,18 +8,17 @@ Sub SplitRowsIntoSheets()
     Dim rowsPerSheet As Long
     Dim sheetCount As Long
     Dim i As Long
-    Dim j As Long
     Dim dataRange As Range
     
     ' Запрос пользователя о количестве строк на каждом листе
     rowsPerSheet = InputBox("Введите количество строк на каждом листе:", "Разделение строк на листы", 1000)
     If rowsPerSheet <= 0 Then Exit Sub
     
-    ' Указываем первый лист
-    Set wsSource = ThisWorkbook.Sheets(1)
+    ' Указываем первый лист активной книги
+    Set wsSource = ActiveWorkbook.Sheets(1)
     
-    ' Определяем количество строк в исходном листе
-    lastRow = wsSource.Cells(wsSource.Rows.Count, "A").End(xlUp).Row
+    ' Определяем количество строк в исходном листе, учитывая все столбцы
+    lastRow = wsSource.Cells.Find("*", SearchOrder:=xlByRows, SearchDirection:=xlPrevious).Row
     
     ' Определяем общее количество строк
     totalRows = lastRow ' Предполагаем, что есть заголовок
@@ -32,7 +31,7 @@ Sub SplitRowsIntoSheets()
     
     ' Создаем новые листы и копируем данные
     For i = 1 To sheetCount
-        Set wsNew = ThisWorkbook.Sheets.Add(After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count))
+        Set wsNew = ActiveWorkbook.Sheets.Add(After:=ActiveWorkbook.Sheets(ActiveWorkbook.Sheets.Count))
         wsNew.Name = "Sheet" & i
         
         ' Копируем заголовок
