@@ -1,78 +1,82 @@
 ' Удаляет дубликаты по строкам. Учитывает выбранный столбец или диапазон но удаляет все строки с дублирующимися значениями. Отличается втроенного инструмента тем что сносит всю строку без сдвига данных.
 
-Sub RemoveDuplicatePhones()
+Sub RemoveDuplicate()
     Dim ws As Worksheet
     Dim lastRow As Long
     Dim phoneColumn As Range
-    Dim i As Long
+    Dim i As Long, j As Long
     Dim dict As Object
     Dim removedCount As Long
     Dim data As Variant
     Dim result As Variant
     Dim resultIndex As Long
+    Dim totalColumns As Long
 
-    ' Отключите обновление экрана и автоматический пересчет
+    ' Отключаем обновление экрана и вычисления для ускорения работы
     Application.ScreenUpdating = False
     Application.Calculation = xlCalculationManual
 
-    ' Установите текущий рабочий лист
+    ' Устанавливаем активный лист
     Set ws = ActiveSheet
 
-    ' Запросите у пользователя выбор столбца для номеров телефонов
+    ' Запрашиваем у пользователя выбор столбца с телефонами
     On Error Resume Next
     Set phoneColumn = Application.InputBox("Выберите столбец с номерами телефонов:", "Выбор столбца", Type:=8)
     On Error GoTo 0
 
     If phoneColumn Is Nothing Then
-        MsgBox "Операция отменена пользователем.", vbExclamation
+        MsgBox "Выбор столбца отменен.", vbExclamation
         Exit Sub
     End If
 
-    ' Найдите последнюю заполненную строку в выбранном столбце
+    ' Определяем последнюю заполненную строку и количество столбцов в листе
     lastRow = ws.Cells(ws.Rows.Count, phoneColumn.Column).End(xlUp).Row
+    totalColumns = ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
 
-    ' Создайте словарь для хранения уникальных номеров телефонов
+    ' Создаём словарь для хранения уникальных номеров телефонов
     Set dict = CreateObject("Scripting.Dictionary")
 
-    ' Переменная для подсчета удаленных строк
+    ' Инициализируем счётчик удалённых строк
     removedCount = 0
 
-    ' Считать данные в массив
-    data = ws.Range("A1:H" & lastRow).Value
+    ' Читаем все данные в диапазоне A1 до последнего столбца и последней строки
+    data = ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, totalColumns)).Value
     ReDim result(1 To UBound(data, 1), 1 To UBound(data, 2))
     resultIndex = 1
 
-    ' Переберите строки и удалите дублирующиеся номера телефонов
+    ' Проходим по каждой строке данных
     For i = 1 To UBound(data, 1)
         Dim phoneNumber As String
         phoneNumber = data(i, phoneColumn.Column)
 
+        ' Проверяем, есть ли этот номер телефона в словаре
         If dict.exists(phoneNumber) Then
+            ' Если дубликат найден, увеличиваем счётчик удалённых строк
             removedCount = removedCount + 1
         Else
+            ' Если номер уникален, добавляем его в словарь и копируем всю строку в итоговый массив
             dict.Add phoneNumber, Nothing
-            result(resultIndex, 1) = data(i, 1)
-            result(resultIndex, 2) = data(i, 2)
-            result(resultIndex, 3) = data(i, 3)
-            result(resultIndex, 4) = data(i, 4)
-            result(resultIndex, 5) = data(i, 5)
-            result(resultIndex, 6) = data(i, 6)
-            result(resultIndex, 7) = data(i, 7)
-            result(resultIndex, 8) = data(i, 8)
+            For j = 1 To UBound(data, 2)
+                result(resultIndex, j) = data(i, j)
+            Next j
             resultIndex = resultIndex + 1
         End If
     Next i
 
-    ' Записать результат обратно в лист
-    ws.Range("A1:H" & lastRow).ClearContents
-    ws.Range("A1").Resize(resultIndex - 1, UBound(result, 2)).Value = result
+    ' Очищаем исходные данные на листе
+    ws.Range(ws.Cells(1, 1), ws.Cells(lastRow, totalColumns)).ClearContents
 
-    ' Очистите память
+    ' Записываем обратно на лист данные без дубликатов
+    ws.Range(ws.Cells(1, 1), ws.Cells(resultIndex - 1, UBound(result, 2))).Value = result
+
+    ' Очистка словаря
     Set dict = Nothing
 
-    ' Включите обновление экрана и автоматический пересчет
+    ' Восстанавливаем настройки экрана и вычислений
     Application.Calculation = xlCalculationAutomatic
     Application.ScreenUpdating = True
 
-    MsgBox "Удаление дублирующихся номеров телефонов завершено! Удалено " & removedCount & " номеров."
+    ' Выводим сообщение о завершении
+    MsgBox "Удаление дубликатов завершено! Удалено " & removedCount & " строк."
 End Sub
+
